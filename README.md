@@ -18,7 +18,7 @@ Toto je jednoduché rozšíření pro Visual Studio Code, které umožňuje zved
 
 ## Jak Používat
 
-1. Spusťte příkaz "Package & increase version to latest" ze seznamu příkazů nebo pomocí klávesové zkratky (lze nastavit v paletě příkazů).
+1. Spusťte příkaz "Package & increment version to latest" ze seznamu příkazů nebo pomocí klávesové zkratky (lze nastavit v paletě příkazů).
 
 2. Po dokončení operací se verze v souboru `app.json` aktualizuje.
 
@@ -49,7 +49,7 @@ Pokud máte nějaké připomínky (hlavně asi k formátu verze), otázky nebo n
 ***
 ***EN:***
 
-This is a simple extension for Visual Studio Code, which allows the user to increase the version in `app.json` file.
+This is a simple extension for Visual Studio Code, which allows the user to increment the version in `app.json` file.
 
 ## Description
 
@@ -67,7 +67,7 @@ This is a simple extension for Visual Studio Code, which allows the user to incr
 
 ## Usage
 
-1. Execute the command "Package & increase version to latest" from the command palette. An additional keybind can be configured in the command palette.
+1. Execute the command "Package & increment version to latest" from the command palette. An additional keybind can be configured in the command palette.
 
 2. The version should be successfully updated.
 
@@ -85,7 +85,7 @@ Some values can be configured in `settings.json` for correct extension behavior:
     - allowed values:
         - `"yymmdd"` - `[the last 2 digits of the year (23)][month][day]`
         - `"yyyymmdd"` - all 4 digits are utilized (2023)
-        - `"autoIncrement"` - the number is increased by 1 regardless of its previous value
+        - `"autoIncrement"` - the number is incrementd by 1 regardless of its previous value
     - the last version number is **always** incremented by 1
 
 ## Suggestions & Contact

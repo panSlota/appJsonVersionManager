@@ -1,7 +1,7 @@
 {
   "name": "ac-appjsonversionmanager",
   "displayName": "AC_appJsonVersionManager",
-  "description": "increases version in app.json when creating a package for production",
+  "description": "increments version in app.json when creating a package for production environment",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.84.0"
@@ -36,8 +36,8 @@
     ],
     "commands": [
       {
-        "command": "ac-appjsonversionmanager.packageIncreaseVersionToLatest",
-        "title": "Package & increase version to latest"
+        "command": "ac-appjsonversionmanager.packageincrementVersionToLatest",
+        "title": "Package & increment version to latest"
       }
     ]
   },

@@ -7,7 +7,7 @@ export let config = {
         "projectPathNotFoundErr": "chyba při získávání cesty k projektu",
     },
     "vscode": {
-        "command": "ac-appjsonversionmanager.packageIncreaseVersionToLatest",
+        "command": "ac-appjsonversionmanager.packageincrementVersionToLatest",
         "alExtID": "ms-dynamics-smb.al",
         "jsonFile": "app.json",
     },

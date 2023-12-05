@@ -1,0 +1,17 @@
+# npm packages
+node_modules/
+
+# compiled files
+*.js
+*.js.map
+out/
+
+# visual studio code files
+.vscode/
+.snapshots/
+
+# build
+*.vsix
+
+# tests (no one does this, come on)
+tests/

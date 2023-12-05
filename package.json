@@ -1,0 +1,64 @@
+{
+  "name": "ac-appjsonversionmanager",
+  "displayName": "AC_appJsonVersionManager",
+  "description": "increases version in app.json when creating a package for production",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.84.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration":[
+      {
+        "title": "ac-appjsonversionmanager",
+        "properties": {
+          "ac-appjsonversionmanager.mainBranchName":{
+            "type":"string",
+            "default" : "main",
+            "description": "specifies the name of the main branch (master|main etc.)"
+          },
+          "ac-appjsonversionmanager.versionFormat":{
+            "type":"string",
+            "default":"yymmdd",
+            "description": "defines the format of the second-to-last version number",
+            "enum": [
+              "yymmdd",
+              "yyyymmdd",
+              "autoIncrement"
+            ]
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "ac-appjsonversionmanager.packageIncreaseVersionToLatest",
+        "title": "Package & increase version to latest"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.84.0",
+    "@types/mocha": "^10.0.3",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "eslint": "^8.52.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.2.2",
+    "@vscode/test-electron": "^2.3.6"
+  }
+}

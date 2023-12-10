@@ -1,7 +1,8 @@
-//nezbytny importy
+//imports
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { config } from './config';
+import path from 'path';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -13,19 +14,19 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * tady se to vsecko stane:
+ * all happens here
  * 
- * 1) zanda pull & merge (snad bez konfliktu)
+ * 1) runs pull & merge 
  * 
- * 2) zvedne verzi
+ * 2) updates the version
  * 
- * 3) zanda AL: Package
+ * 3) runs AL: Package
  */
 function process(): void {
 	let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
 
 	if (!editor) {
-		vscode.window.showErrorMessage(config.msg.pojeb);
+		vscode.window.showErrorMessage(config.msg.atLeastOneEditorOpenErr);
 		return;
 	}
 
@@ -34,6 +35,7 @@ function process(): void {
 		vscode.window.showErrorMessage(config.msg.projectPathNotFoundErr);
 		return;
 	}
+	filePath = path.join(filePath, config.vscode.jsonFile);
 
 	try {
 		syncBranch();
@@ -46,19 +48,20 @@ function process(): void {
 }
 
 /**
- * spusti AL: Package
+ * runs AL: Package
  */
 function alPackage(): void {
 	let extension: vscode.Extension<any> | undefined = vscode.extensions.getExtension(config.vscode.alExtID);
 
 	if (extension?.isActive)
+		// eslint-disable-next-line curly
 		vscode.commands.executeCommand('al.package');
 }
 
 /**
- * precte si JSON, sezene verzi, tu aktualizuje pomoci ```updateVersion(version: string)```, zapise zpatky do jsonu a jde do pici
- * @param {string} filePath cesta k app.json v aktualnim projektu
- * @see updateVersion
+ * reads the JSON content, gets the version &amp; updates it using `updateVersion(version: string): string` &amp; writes the changes to the file
+ * @param {string} filePath full path to the app.json file in the current header
+ * @see {@link updateVersion}
  */
 function updateJson(filePath: string): void {
 	try {
@@ -78,24 +81,28 @@ function updateJson(filePath: string): void {
 }
 
 /**
- * 	aktualizuje verzi zavedenym zpusobem:
+ * 	updates the version using the following process:
  * 
- * 	1) predposledni cislo nastavi na odpovidajici interpretaci dnesniho data
+ *  1) second-to-last number is set to today's date (according to the format settings in config)
  * 
- * 	2) posledni cislo zvedne o 1
+ * 	2) the last digit is incremented by 1
  * 
- * @param version verze nactena z app.json
- * @returns nova verze ve stejnym formatu ale s novejma cislickama
+ * @param version version from app.json
+ * @returns new version with new numbers
 */
 function updateVersion(version: string): string {
+	const versionFormat: string = vscode.workspace.getConfiguration().get('ac-appjsonversionmanager.versionFormat', "yymmdd");
+
 	let versionParts: string[] = version.split('.');
 
-	let currentDate: Date = new Date();
-	let year: string = currentDate.getFullYear().toString().slice(-2);
-	let month: string = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-	let day: string = currentDate.getDate().toString().padStart(2, '0');
+	if (versionFormat === "autoIncrement") {
+		versionParts[2] = (parseInt(versionParts[2]) + 1).toString();
+	}
+	else {
+		let formattedDate: string = formatDate(versionFormat);
+		versionParts[2] = formattedDate;
+	}
 
-	versionParts[2] = `${year}${month}${day}`;
 	versionParts[3] = (parseInt(versionParts[3]) + 1).toString();
 
 	let updatedVersion: string = versionParts.join('.');
@@ -104,11 +111,28 @@ function updateVersion(version: string): string {
 }
 
 /**
- * pomoci API poskytovanyho git ext ve vs code provede merge do aktualni vetve s pullnutym masterem
- * 
- * bacha, neresi to konflikty pri merge!!
+ * formats the current date using the provided format string from the config
+ * @param format format of the date available from the config
+ * @returns formatted date as a string
  */
-async function syncBranch(): Promise<void> {
+function formatDate(format: string): string {
+	let date: Date = new Date();
+	return format.replace(/y{2,4}/g, match => {
+		const year = date.getFullYear();
+		const yearString = year.toString();
+		const yearSlice = match.length === 2 ? yearString.slice(-2) : yearString;
+		return yearSlice.padStart(match.length, '0');
+	})
+		.replace('mm', (date.getMonth() + 1).toString().padStart(2, '0'))
+		.replace('dd', date.getDate().toString().padStart(2, '0'));
+}
+
+/**
+ * gets the current repo used by this project &amp; synchronizes the default &amp; current branch
+ * 
+ * does not resolve any conflicts that may occur during the process as this should only be executed when all of the changes in code have already been pushed to the repo
+ */
+function syncBranch(): void {
 	const workspace_err: string = 'otevři si projekt!';
 	const gitExt_err: string = 'nefunguje git ext!';
 	const gitRepo_err: string = 'git repo má problém, netuším jakej';
@@ -127,6 +151,7 @@ async function syncBranch(): Promise<void> {
 
 	let git: any = gitExt.exports;
 
+	//ted to pada tady -> PROC??
 	let repository: any | undefined = git.repositories.find((repo: { rootUri: { fsPath: string | undefined; }; }) => repo.rootUri?.fsPath === workspace?.uri.fsPath);
 
 	if (!repository) {
@@ -134,16 +159,28 @@ async function syncBranch(): Promise<void> {
 		return;
 	}
 
-	let currentBranch: string = repository.state.HEAD.name;
-
-	await repository.checkout(config.git.masterBranchName);
-	await repository.pull('origin', config.git.masterBranchName);
-	await repository.checkout(currentBranch);
-	await repository.merge(config.git.masterBranchName);
-
-	repository.exec('reflog');
+	cpcm(repository);
 
 	vscode.window.showInformationMessage(config.msg.gitUpdated);
+}
+
+/**
+ * checks out to the default branch, pulls, checks back, merges
+ * @param repository retrieved repo from the vscode.git ext
+ */
+async function cpcm(repository: any): Promise<void> {
+	const defaultBranch: string = vscode.workspace.getConfiguration().get('ac-appjsonversionmanager.mainBranchName', "main");
+
+	let currentBranch: string = repository.state.HEAD.name;
+
+	await repository.checkout(defaultBranch);
+	await repository.pull('origin', defaultBranch);
+	await repository.checkout(currentBranch);
+	await repository.merge(defaultBranch);
+
+	await repository.addChanges([config.vscode.jsonFile]);
+
+	repository.exec('reflog');
 }
 
 // This method is called when your extension is deactivated

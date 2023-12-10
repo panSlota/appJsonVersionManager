@@ -1,18 +1,15 @@
 export let config = {
     "msg": {
-        "err": "vyskytla se chyba: %1",
-        "versionUpdated": "verze aktualizována",
-        "pojeb": "asi by pomohlo, kdybys mel otevrenej aspon jeden panel, ty moulo!",
-        "gitUpdated": "větev úspěšně aktualizována",
-        "projectPathNotFoundErr": "chyba při získávání cesty k projektu",
+        "err": "an error occurred: %1",
+        "versionUpdated": "version updated",
+        "atLeastOneEditorOpenErr": "at least one editor must be open",
+        "gitUpdated": "branch successfully updated",
+        "projectPathNotFoundErr": "an error occurred during retrieving the project path",
     },
     "vscode": {
         "command": "ac-appjsonversionmanager.packageincrementVersionToLatest",
         "alExtID": "ms-dynamics-smb.al",
         "jsonFile": "app.json",
-    },
-    "git": {
-        "masterBranchName": "main"
     }
-}
+};
 //nevim co delam
